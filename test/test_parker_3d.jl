@@ -28,9 +28,9 @@ using ParticleTransport
             b_hat[3] * e1[1] - b_hat[1] * e1[3],
             b_hat[1] * e1[2] - b_hat[2] * e1[1]]
 
-        x_para = [dot(get_position(s.u[end]), b_hat) for s in sim]
-        x_perp1 = [dot(get_position(s.u[end]), e1) for s in sim]
-        x_perp2 = [dot(get_position(s.u[end]), e2) for s in sim]
+        x_para = [dot(get_position(s.u[end]), b_hat) for s in sim.u]
+        x_perp1 = [dot(get_position(s.u[end]), e1) for s in sim.u]
+        x_perp2 = [dot(get_position(s.u[end]), e2) for s in sim.u]
 
         @test var(x_para) ≈ 2 * kpara * T_end rtol = 0.12
         @test var(x_perp1) ≈ 2 * kperp * T_end rtol = 0.12
@@ -50,7 +50,7 @@ end
         ep = EnsembleProblem(prob)
         sim = solve(ep, EM(), EnsembleThreads(); dt = 1.0e-2, trajectories = 2500, save_everystep = false)
 
-        dy = [s.u[end][4] - log(p0) for s in sim]
+        dy = [s.u[end][4] - log(p0) for s in sim.u]
         @test mean(dy) ≈ 3 * D0 * T_end rtol = 0.08
         @test var(dy) ≈ 2 * D0 * T_end rtol = 0.10
     end
@@ -78,6 +78,30 @@ end
         u0_iip = collect(u0_oop)
         sol_iip = solve(TransportProblem(u0_iip, (0.0, T_end), param), EM(); dt = 1.0e-2)
         @test sol_iip.u[end][2] ≈ vd_expected * T_end rtol = 1.0e-6
+    end
+end
+
+@testset "2D Curved Azimuthal Field Itô Drift Invariance" begin
+    let
+        # Pure parallel diffusion on circle r = r0: div(κ) = -(κ_∥/r) r̂ cancels curvature push
+        B_circ(x) = begin
+            r = hypot(x[1], x[2])
+            SA[-x[2] / r, x[1] / r, 0.0]
+        end
+        r0 = 2.0
+        kpara = 0.5
+        T_end = 1.0
+        param = prepare(; B = B_circ, kappa = ConstantDiffusion(kpara, 0.0), dims = 2)
+        prob = TransportProblem(make_state(SA[r0, 0.0, 0.0], 1.0), (0.0, T_end), param)
+        Random.seed!(88)
+        sim = solve(
+            EnsembleProblem(prob), EM(), EnsembleThreads();
+            dt = 5.0e-4, trajectories = 1500, save_everystep = false
+        )
+        rs = [hypot(s.u[end][1], s.u[end][2]) for s in sim.u]
+        thetas = [atan(s.u[end][2], s.u[end][1]) for s in sim.u]
+        @test mean(rs) ≈ r0 rtol = 0.02
+        @test var(thetas) ≈ 2 * kpara * T_end / r0^2 rtol = 0.15
     end
 end
 

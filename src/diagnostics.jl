@@ -61,7 +61,7 @@ function momentum_spectrum(
         sim::EnsembleSolution, edges::AbstractVector;
         weights::Union{Nothing, AbstractVector{<:Real}} = nothing
     )
-    states = [s.u[end] for s in sim]
+    states = [s.u[end] for s in sim.u]
     return momentum_spectrum(states, edges; weights)
 end
 
@@ -103,12 +103,12 @@ function spatial_density(
         sim::EnsembleSolution, x_edges::AbstractVector;
         dim::Int = 1, weights::Union{Nothing, AbstractVector{<:Real}} = nothing
     )
-    states = [s.u[end] for s in sim]
+    states = [s.u[end] for s in sim.u]
     return spatial_density(states, x_edges; dim, weights)
 end
 
 """
-    streaming_spectrum_ensemble(prob, edges; prob_func = (prob, i, repeat) -> prob, weight_func = (sol, i) -> 1.0)
+    streaming_spectrum_ensemble(prob, edges; prob_func = (prob, ctx) -> prob, weight_func = (sol, ctx) -> 1.0)
 
 Construct a `SciMLBase.EnsembleProblem` with a streaming `output_func` and `reduction`
 that accumulates weighted momentum bin counts in O(1) memory per trajectory.
@@ -117,16 +117,16 @@ Convert the resulting `sim.u` vector to a [`MomentumSpectrum`](@ref) with
 """
 function streaming_spectrum_ensemble(
         prob::SDEProblem, edges::AbstractVector;
-        prob_func = (prob, i, repeat) -> prob,
-        weight_func = (sol, i) -> 1.0
+        prob_func = (prob, ctx) -> prob,
+        weight_func = (sol, ctx) -> 1.0
     )
     T = float(eltype(edges))
     ed = collect(T, edges)
     nb = length(ed) - 1
 
-    output_func = function (sol, i)
+    output_func = function (sol, ctx)
         p = get_momentum(sol.u[end])
-        w = T(weight_func(sol, i))
+        w = T(weight_func(sol, ctx))
         idx = (p >= ed[1] && p < ed[end]) ? searchsortedlast(ed, p) : 0
         return ((idx, w), false)
     end
