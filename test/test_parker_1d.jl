@@ -18,7 +18,7 @@ using ParticleTransport
         ep = EnsembleProblem(prob)
         sim = solve(ep, EM(), EnsembleThreads(); dt = 1.0e-2, trajectories = 2000, save_everystep = false)
 
-        xs = [s.u[end][1] for s in sim]
+        xs = [s.u[end][1] for s in sim.u]
         @test abs(mean(xs)) < 0.12
         @test var(xs) ≈ 2 * kappa * T_end rtol = 0.1
         # Unused y, z, ln(p) must remain unchanged
@@ -39,7 +39,7 @@ end
         ep = EnsembleProblem(prob)
         sim = solve(ep, EM(), EnsembleThreads(); dt = 1.0e-2, trajectories = 2000, save_everystep = false)
 
-        xs = [s.u[end][1] for s in sim]
+        xs = [s.u[end][1] for s in sim.u]
         @test mean(xs) ≈ u_val * T_end rtol = 0.05
         @test var(xs) ≈ 2 * kappa * T_end rtol = 0.1
     end
@@ -80,7 +80,7 @@ end
         # Continuous injection in time t_inj ∈ [0, T_max] at the shock x = 0, p = 1.0
         n_init = 1200
         t_injs = rand(MersenneTwister(2026), n_init) .* T_max
-        prob_func = (p_base, i, repeat) -> remake(p_base; tspan = (t_injs[i], T_max))
+        prob_func = (p_base, ctx) -> remake(p_base; tspan = (t_injs[ctx.sim_id], T_max))
 
         rule = SplitRule(; ratio = 2.0, nsplit = 2, max_generations = 5, max_particles = 50_000)
         res = solve_with_splitting(

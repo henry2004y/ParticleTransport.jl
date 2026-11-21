@@ -7,8 +7,9 @@ using FastInterpolations: constant_interp, linear_interp, cardinal_interp,
 import ForwardDiff
 import Adapt
 using StaticArrays: SVector, SMatrix, SA
-using SciMLBase: SDEProblem, EnsembleProblem, EnsembleThreads, EnsembleSerial,
-    EnsembleDistributed, EnsembleSplitThreads, EnsembleSolution,
+using Random: default_rng
+using SciMLBase: SDEProblem, EnsembleProblem, EnsembleContext, EnsembleThreads,
+    EnsembleSerial, EnsembleDistributed, EnsembleSplitThreads, EnsembleSolution,
     DiscreteCallback, CallbackSet, terminate!, remake, solve
 using PlasmaPopulations: Particle, Proton, Electron, Positron, C_SI, E_SI
 using PrecompileTools: @setup_workload, @compile_workload

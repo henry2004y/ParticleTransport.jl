@@ -51,7 +51,7 @@ end
         prob, alg, ensemblealg = EnsembleThreads();
         rule::SplitRule = SplitRule(),
         trajectories::Int = 1,
-        prob_func = (prob, i, repeat) -> prob,
+        prob_func = (prob, ctx) -> prob,
         weights = nothing,
         callback = nothing,
         kwargs...
@@ -64,7 +64,7 @@ function solve_with_splitting(
         prob::SDEProblem, alg, ensemblealg = EnsembleThreads();
         rule::SplitRule = SplitRule(),
         trajectories::Int = 1,
-        prob_func = (prob, i, repeat) -> prob,
+        prob_func = (prob, ctx) -> prob,
         weights::Union{Nothing, AbstractVector{<:Real}} = nothing,
         callback = nothing,
         kwargs...
@@ -74,7 +74,8 @@ function solve_with_splitting(
 
     init_records = Vector{_SpawnRecord{typeof(prob.u0), T}}(undef, trajectories)
     for i in 1:trajectories
-        pi = prob_func(prob, i, 1)
+        ctx = EnsembleContext(i, 1, 1, nothing, default_rng(), nothing)
+        pi = prob_func(prob, ctx)
         w0 = isnothing(weights) ? one(T) : T(weights[i])
         y0 = @inbounds T(pi.u0[4])
         init_records[i] = _SpawnRecord(pi.u0, T(pi.tspan[1]), w0, y0 + T(rule.log_ratio))
@@ -96,7 +97,8 @@ function solve_with_splitting(
         child_buckets = [Vector{_SpawnRecord{typeof(prob.u0), T}}() for _ in 1:n_cur]
         final_weights = Vector{T}(undef, n_cur)
 
-        gen_prob_func = function (p_base, i, repeat)
+        gen_prob_func = function (p_base, ctx)
+            i = ctx.sim_id
             rec = current_gen[i]
             final_weights[i] = rec.weight
             if !allow_split
@@ -131,8 +133,8 @@ function solve_with_splitting(
         sim = solve(ep, alg, ensemblealg; trajectories = n_cur, save_everystep = false, kwargs...)
 
         for i in 1:n_cur
-            push!(all_states, sim[i].u[end])
-            push!(all_times, T(sim[i].t[end]))
+            push!(all_states, sim.u[i].u[end])
+            push!(all_times, T(sim.u[i].t[end]))
             push!(all_weights, final_weights[i])
         end
 

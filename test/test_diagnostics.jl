@@ -19,7 +19,7 @@ using ParticleTransport
         edges = 10.0 .^ range(-1.0, 1.5; length = 15)
 
         # Run standard ensemble with deterministic per-trajectory seeds
-        pf = (p_base, i, repeat) -> remake(p_base; seed = i)
+        pf = (p_base, ctx) -> remake(p_base; seed = ctx.sim_id)
         sim = solve(EnsembleProblem(prob; prob_func = pf), EM(), EnsembleSerial(); dt = 0.02, trajectories = 200, save_everystep = false)
         spec_post = momentum_spectrum(sim, edges)
 

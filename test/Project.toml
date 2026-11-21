@@ -17,4 +17,4 @@ ParticleTransport = {path = ".."}
 [compat]
 Aqua = "0.8"
 ExplicitImports = "1"
-StochasticDiffEq = "6"
+StochasticDiffEq = "7"
