@@ -1,0 +1,30 @@
+name = "ParticleTransport"
+uuid = "420d4e7a-a4ed-4baa-a973-7b4b72213576"
+authors = ["Hongyang Zhou <hyzhou@umich.edu>"]
+version = "0.1.0"
+
+[workspace]
+projects = ["test", "docs"]
+
+[deps]
+Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+FastInterpolations = "9ea80cae-fc13-4c00-8066-6eaedb12f34b"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+PlasmaPopulations = "19fe0aba-210f-40e6-8711-72208e0968be"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[compat]
+Adapt = "4"
+FastInterpolations = "0.4"
+ForwardDiff = "1"
+LinearAlgebra = "1"
+PlasmaPopulations = "0.2"
+PrecompileTools = "1"
+Random = "1.11.0"
+SciMLBase = "2, 3"
+StaticArrays = "1.2"
+julia = "1.11"
