@@ -17,7 +17,7 @@ makedocs(;
     sitename = "ParticleTransport.jl",
     doctest = DOCTEST_ONLY ? :only : true,
     format = DocumenterVitepress.MarkdownVitepress(;
-        repo = "https://github.com/JuliaSpacePhysics/ParticleTransport.jl",
+        repo = "https://github.com/henry2004y/ParticleTransport.jl",
         devbranch = "main",
         devurl = "dev",
     ),
@@ -31,7 +31,7 @@ makedocs(;
 
 if !DOCTEST_ONLY
     DocumenterVitepress.deploydocs(;
-        repo = "github.com/JuliaSpacePhysics/ParticleTransport.jl",
+        repo = "github.com/henry2004y/ParticleTransport.jl",
         target = "build",
         devbranch = "main",
         branch = "gh-pages",
