@@ -5,8 +5,11 @@ const eV = E_SI
 
 """
     make_state(x, p)
+    make_state(x, p, mu)
 
-Construct a 4-component Parker SDE state `SVector{4}(x[1], x[2], x[3], log(p))`.
+Construct a 4-component Parker SDE state `SVector{4}(x[1], x[2], x[3], log(p))`, or a
+5-component Focused Transport SDE state `SVector{5}(x[1], x[2], x[3], log(p), mu)` with
+pitch-angle cosine `mu ∈ [-1, 1]`.
 """
 @inline function make_state(x::AbstractVector, p::Real)
     p > zero(p) || throw(ArgumentError("Momentum p must be positive; got $p."))
@@ -18,6 +21,22 @@ end
     p > zero(p) || throw(ArgumentError("Momentum p must be positive; got $p."))
     T = promote_type(typeof(x), typeof(p), Float64)
     return SVector{4, T}(x, zero(T), zero(T), log(p))
+end
+
+@inline function make_state(x::AbstractVector, p::Real, mu::Real)
+    p > zero(p) || throw(ArgumentError("Momentum p must be positive; got $p."))
+    abs(mu) <= one(mu) ||
+        throw(ArgumentError("Pitch-angle cosine mu must lie in [-1, 1]; got $mu."))
+    T = promote_type(eltype(x), typeof(p), typeof(mu), Float64)
+    return SVector{5, T}(x[1], x[2], x[3], log(p), mu)
+end
+
+@inline function make_state(x::Real, p::Real, mu::Real)
+    p > zero(p) || throw(ArgumentError("Momentum p must be positive; got $p."))
+    abs(mu) <= one(mu) ||
+        throw(ArgumentError("Pitch-angle cosine mu must lie in [-1, 1]; got $mu."))
+    T = promote_type(typeof(x), typeof(p), typeof(mu), Float64)
+    return SVector{5, T}(x, zero(T), zero(T), log(p), mu)
 end
 
 """
@@ -33,6 +52,13 @@ Extract the 3D spatial position `SVector{3}(u[1], u[2], u[3])` from a transport 
 Extract the momentum `p = exp(u[4])` from a transport state.
 """
 @inline get_momentum(u) = @inbounds exp(u[4])
+
+"""
+    get_pitch_angle(u)
+
+Extract the pitch-angle cosine `μ = u[5]` from a 5-component focused transport state.
+"""
+@inline get_pitch_angle(u) = @inbounds u[5]
 
 """
     momentum2velocity(p, m, c_light = c)
@@ -76,10 +102,10 @@ Convert kinetic energy `E` to momentum magnitude `p`.
 end
 
 """
-    get_energy(u, param::TransportParams)
+    get_energy(u, param::AbstractTransportParams)
     get_energy(u, m, c_light = c)
 
 Extract kinetic energy from a transport state `u`.
 """
-@inline get_energy(u, p::TransportParams) = momentum2energy(get_momentum(u), p.m, p.c)
+@inline get_energy(u, p::AbstractTransportParams) = momentum2energy(get_momentum(u), p.m, p.c)
 @inline get_energy(u, m::Real, c_light::Real = c) = momentum2energy(get_momentum(u), m, c_light)

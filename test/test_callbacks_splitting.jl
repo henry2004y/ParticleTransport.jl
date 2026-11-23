@@ -53,6 +53,36 @@ end
         @test length(res.states) > 5
         @test res.generations >= 2
         @test sum(res.weights) ≈ 5.0 rtol = 1.0e-12
+
+        # pmin_split prevents splitting until momentum crosses pmin_split
+        rule_high = SplitRule(; ratio = 2.0, nsplit = 2, pmin_split = 20.0, max_generations = 4)
+        res_none = solve_with_splitting(
+            prob, EM(), EnsembleSerial(); rule = rule_high, trajectories = 5, dt = 0.01
+        )
+        @test length(res_none.states) == 5
+        @test res_none.generations == 1
+        @test sum(res_none.weights) ≈ 5.0 rtol = 1.0e-12
+
+        rule_mid = SplitRule(; ratio = 2.0, nsplit = 2, pmin_split = 4.0, max_generations = 4)
+        res_mid = solve_with_splitting(
+            prob, EM(), EnsembleSerial(); rule = rule_mid, trajectories = 5, dt = 0.01
+        )
+        @test 5 < length(res_mid.states) < length(res.states)
+        @test sum(res_mid.weights) ≈ 5.0 rtol = 1.0e-12
+
+        # 5D Focused Transport splitting works seamlessly (μ = 1 feels parallel compression -bJb = +3)
+        p_fte = prepare(;
+            u = u_comp, B = x -> SA[1.0, 0.0, 0.0],
+            model = FocusedTransport(), dims = 1, q = 1.0, m = 1.0, c = Inf,
+        )
+        prob_fte = TransportProblem(make_state(0.0, 1.0, 1.0), (0.0, 1.5), p_fte)
+        res_fte = solve_with_splitting(
+            prob_fte, EM(), EnsembleSerial();
+            rule = SplitRule(; ratio = 2.0, nsplit = 2, max_generations = 3),
+            trajectories = 3, dt = 0.01,
+        )
+        @test length(res_fte.states) > 3
+        @test sum(res_fte.weights) ≈ 3.0 rtol = 1.0e-12
     end
 end
 
