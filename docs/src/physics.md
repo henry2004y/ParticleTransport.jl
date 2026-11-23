@@ -250,6 +250,27 @@ solutions of Parker's transport equation:
 | **Leaky-Box Steady State** | ``D_{pp} = D_0 p^2``, slab escape ``\tau_{\mathrm{esc}}`` | Power-law wings ``f(p) \propto p^{-3/2 \pm \sqrt{9/4 + 1/(D_0 \tau_{\mathrm{esc}})}}`` | Stochastic Acceleration |
 | **3D Anisotropic & Curved-Field Diffusion** | ``\kappa_\parallel \gg \kappa_\perp``, curved ``\mathbf{B}`` | Anisotropic 3D Gaussian & exact circular invariance ``r(t) = r_0`` via ``\nabla\cdot\boldsymbol{\kappa}`` | 3D Anisotropic Diffusion |
 
+## Focused Transport & Spherical Coordinates
+
+In addition to Cartesian Parker transport, `ParticleTransport.jl` supports:
+
+- **Focused Transport Equation (FTE)** (`model = FocusedTransport()`): Evolves the 5D state
+  ``(x, y, z, \ln p, \mu)`` with parallel streaming ``v\mu\hat{\mathbf{b}}``, magnetic
+  mirroring ``-\frac{1-\mu^2}{2} v (\hat{\mathbf{b}}\cdot\nabla\ln B)``, anisotropic flow
+  compression/shear, pitch-angle diffusion ``D_{\mu\mu}``, cross-field spatial diffusion
+  ``\boldsymbol{\sigma}_\perp = \sqrt{2\kappa_\perp}(\mathbf{I} - \hat{\mathbf{b}}\hat{\mathbf{b}}^T)``,
+  and pitch-angle-dependent guiding-center drifts ``\mathbf{v}_d(\mu)``.
+- **Spherical Coordinates** (`coords = SphericalCoordinates()`): Solves both Parker and
+  Focused transport in 1D ``(r)``, 2D ``(r, \theta)``, or 3D ``(r, \theta, \phi)`` using the
+  Jacobian-weighted density ``F_1 = F r^2 \sin\theta`` (Pei et al. 2010) and the
+  singularity-free metric noise factorization
+  ``\mathbf{P} = \operatorname{diag}(1, 1/r, 1/(r\sin\theta))\,\boldsymbol{\sigma}``.
+- **Physics-Based Diffusion Models**: Quasi-linear theory (`QLTDiffusion`, Giacalone &
+  Jokipii 1999), Nonlinear Guiding Center perpendicular diffusion (`NLGCDiffusion`,
+  Matthaeus et al. 2003), Alfvén-wave stochastic acceleration (`AlfvenWaveMomentumDiffusion`,
+  Skilling 1975), and viscous flow-shear acceleration (`FlowShearMomentumDiffusion`,
+  Earl, Jokipii & Morfill 1988).
+
 ## References
 
 - Parker, E. N. (1965). *The passage of energetic charged particles through interplanetary

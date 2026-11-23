@@ -22,6 +22,9 @@ const ANALYTICAL_DEMOS = [
     "demo_dsa_1d.jl",
     "demo_momentum_diffusion.jl",
     "demo_anisotropic_diffusion.jl",
+    "demo_focused_transport.jl",
+    "demo_spherical_transport.jl",
+    "demo_physics_diffusion_and_diagnostics.jl",
 ]
 
 const COMPARISON_DEMOS = [
