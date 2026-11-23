@@ -11,4 +11,4 @@ ParticleTransport = {path = ".."}
 [compat]
 BenchmarkTools = "1"
 StaticArrays = "1.2"
-StochasticDiffEq = "6"
+StochasticDiffEq = "7"
