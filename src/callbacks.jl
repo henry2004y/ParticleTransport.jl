@@ -1,6 +1,6 @@
-# Composable SciML callbacks for spatial and momentum boundary conditions.
+# Composable SciML callbacks for spatial, momentum, and pitch-angle boundary conditions.
 
-@inline _set_component(u::SVector{4}, i::Int, val) = Base.setindex(u, val, i)
+@inline _set_component(u::SVector, i::Int, val) = Base.setindex(u, val, i)
 @inline function _set_component(u::AbstractVector, i::Int, val)
     u[i] = val
     return u
@@ -125,6 +125,27 @@ function MomentumBounds(;
             integrator.u = _set_component(u, 4, clamp(y, ymin, ymax))
             return nothing
         end
+    end
+    return DiscreteCallback(condition, affect!; save_positions)
+end
+
+"""
+    PitchAngleBounds(; save_positions = (false, false))
+
+Return a `DiscreteCallback` reflecting pitch-angle cosine `u[5] = μ` back into `[-1, 1]`
+when a finite SDE step overshoots `|μ| > 1` in focused transport simulations.
+"""
+function PitchAngleBounds(; save_positions = (false, false))
+    condition = (u, t, integrator) -> @inbounds(u[5] < -one(u[5]) || u[5] > one(u[5]))
+    affect! = function (integrator)
+        u = integrator.u
+        mu = @inbounds u[5]
+        T = typeof(mu)
+        # Fold into [0, 4) relative to -1, then reflect [2, 4) back into [-1, 1]
+        r = mod(mu + one(T), T(4))
+        mu_ref = clamp(r <= T(2) ? -one(T) + r : T(3) - r, -one(T), one(T))
+        integrator.u = _set_component(u, 5, mu_ref)
+        return nothing
     end
     return DiscreteCallback(condition, affect!; save_positions)
 end

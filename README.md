@@ -4,11 +4,12 @@ Stochastic differential equation (SDE) solver for energetic particle transport a
 
 ## Features
 
-- **1D/2D/3D Cartesian Parker Transport**: Forward-in-time Itô SDEs in `(x, y, z, ln p)` with anisotropic spatial diffusion ($\kappa_\parallel, \kappa_\perp$), plasma convection ($\mathbf{u}$), adiabatic/compressional acceleration ($-\frac{1}{3}\nabla\cdot\mathbf{u}$), optional momentum diffusion ($D_{pp}$), and guiding-center magnetic drifts ($\mathbf{v}_d$).
+- **Parker & Focused Transport (Cartesian & Spherical)**: Forward-in-time Itô SDEs in 1D/2D/3D Cartesian `(x, y, z, ln p[, μ])` or Spherical `(r, θ, φ, ln p[, μ])` coordinates, including anisotropic spatial diffusion ($\kappa_\parallel, \kappa_\perp$), pitch-angle diffusion ($D_{\mu\mu}$), magnetic focusing/mirroring, plasma convection ($\mathbf{u}$), adiabatic/compressional acceleration, momentum diffusion ($D_{pp}$), guiding-center magnetic drifts ($\mathbf{v}_d$), 2D out-of-plane tracking, and selective acceleration-region masking.
+- **Physics-Based Diffusion Models**: Built-in `QLTDiffusion` (Giacalone & Jokipii 1999), `NLGCDiffusion` (Matthaeus et al. 2003), `AlfvenWaveMomentumDiffusion` (Skilling 1975), `FlowShearMomentumDiffusion` (Earl et al. 1988), and `QLTPitchAngleDiffusion`, plus power-law and custom callable models.
 - **Analytical & Numerical MHD Fields**: Define $\mathbf{u}(\mathbf{x}, t)$ and $\mathbf{B}(\mathbf{x}, t)$ via analytical functions or gridded arrays interpolated with `FastInterpolations.jl`, with automatic spatial derivatives via `ForwardDiff.jl` / interpolator gradients.
 - **Native SciML Integration**: Build standard `SciMLBase.SDEProblem` and `EnsembleProblem` objects solved directly with `StochasticDiffEq.jl` (`EM`, `SRIW1`, `EnsembleThreads`, etc.).
-- **Boundary Conditions & Particle Splitting**: Composable SciML callbacks for absorbing, periodic, reflecting, and momentum boundaries, plus a generational ensemble runner for particle splitting in high-energy power-law tails.
-- **Diagnostics**: Weighted energy/momentum spectra $f(p, t)$ and spatial distributions $n(\mathbf{x}, E, t)$ both from `EnsembleSolution` and via $O(1)$-memory streaming `EnsembleProblem` reductions.
+- **Injection, Boundary Conditions & Particle Splitting**: Initial/continuous injection samplers (delta, Maxwellian, power-law, box, and field-conditioned rejection sampling), composable callbacks (`TerminateOutside`, `PeriodicBoundary`, `ReflectingBoundary`, `MomentumBounds`, `PitchAngleBounds`), and generational particle splitting with configurable `pmin_split`.
+- **Diagnostics**: Weighted energy/momentum spectra $f(p, t)$, 1D/2D/3D local phase-space distributions (`LocalDistribution`), per-face escaped-particle spectra (`escaped_spectra`), and $O(1)$-memory streaming `EnsembleProblem` reductions (including multi-snapshot `saveat`).
 
 ## Quick Example
 
